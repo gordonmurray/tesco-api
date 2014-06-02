@@ -1,68 +1,34 @@
-Silex, a simple Web Framework
+Tesco-API, an unofficial API
 =============================
 
-Silex is a PHP micro-framework to develop websites based on `Symfony2
-components`_:
+A simple API to allow you to search for a product and return a list of Products sold by Tesco with a full title, price, link and image.
 
-.. code-block:: php
-
-    <?php
-
-    require_once __DIR__.'/../vendor/autoload.php';
-
-    $app = new Silex\Application();
-
-    $app->get('/hello/{name}', function ($name) use ($app) {
-      return 'Hello '.$app->escape($name);
-    });
-
-    $app->run();
-
-Silex works with PHP 5.3.3 or later.
+Developed using a PHP framework called Silex & Goutte.
 
 Installation
 ------------
 
-The recommended way to install Silex is through `Composer`_. Just create a
-``composer.json`` file and run the ``php composer.phar install`` command to
-install it:
+Clone a local copy of the repository and navigate to /index.php/search/{product}
 
-.. code-block:: json
+For example: http://localhost/tesco-api/index.php/search/coke%20zero
 
-    {
-        "require": {
-            "silex/silex": "~1.1"
-        }
-    }
+Will produce:
 
-Alternatively, you can download the `silex.zip`_ file and extract it.
+Array
+(
+    [0] => Array
+        (
+            [title] => Coke Zero 2 Litre
+            [url] => http://tesco.ie/groceries/Product/Details/?id=260507026
+            [price] => &euro;2.29 (&euro;0.12/100ml)
+            [image] => http://img.tesco.ie/Groceries/pi/355\5000112549355\IDShot_90x90.jpg
+        )
 
-More Information
-----------------
-
-Read the `documentation`_ for more information.
-
-Tests
------
-
-To run the test suite, you need `Composer`_:
-
-.. code-block:: bash
-
-    $ php composer.phar install --dev
-    $ vendor/bin/phpunit
-
-Community
----------
-
-Check out #silex-php on irc.freenode.net.
-
-License
--------
-
-Silex is licensed under the MIT license.
-
-.. _Symfony2 components: http://symfony.com
-.. _Composer:            http://getcomposer.org
-.. _silex.zip:           http://silex.sensiolabs.org/download
-.. _documentation:       http://silex.sensiolabs.org/documentation
+    [1] => Array
+        (
+            [title] => Coke Zero 18X330ml
+            [url] => http://tesco.ie/groceries/Product/Details/?id=271424648
+            [price] => &euro;7.00 (&euro;0.12/100ml)
+            [image] => http://img.tesco.ie/Groceries/pi/704\5449000180704\IDShot_90x90.jpg
+        )
+)
