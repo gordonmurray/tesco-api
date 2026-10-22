@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build tests on the runtime PHP version
         run: docker build --pull --target test -t tesco-api-test .
       - name: PHP syntax
