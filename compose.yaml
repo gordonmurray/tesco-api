@@ -1,0 +1,31 @@
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+    environment:
+      TESCO_WEB_API_KEY: ${TESCO_WEB_API_KEY:-TvOSZJHlEk0pjniDGQFAc9Q59WGAR4dA}
+      APP_API_TOKEN: ${APP_API_TOKEN:-}
+      CACHE_TTL: ${CACHE_TTL:-300}
+      DB_PATH: /app/var/tesco.sqlite
+    volumes:
+      - data:/app/var
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    init: true
+    restart: unless-stopped
+    mem_limit: 256m
+    pids_limit: 100
+  test:
+    profiles: [test]
+    build:
+      context: .
+      target: test
+    network_mode: none
+volumes:
+  data:

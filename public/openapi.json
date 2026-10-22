@@ -1,0 +1,912 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tesco Ireland API",
+    "version": "2.0.0",
+    "description": "Unofficial wrapper. All normalized money is integer euro cents. Anonymous Irish catalog prices are estimates. Bearer authentication is required only when APP_API_TOKEN is configured."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "security": [
+    {},
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "service",
+        "summary": "Service information",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "Application and SQLite startup check; does not contact Tesco",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "search",
+        "summary": "Search Tesco Ireland products",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Search"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24,
+              "default": 12
+            }
+          }
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "product",
+        "summary": "Exact product lookup by TPNC",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$",
+              "example": "315853194"
+            }
+          }
+        ]
+      }
+    },
+    "/estimate": {
+      "post": {
+        "operationId": "estimate",
+        "summary": "Estimate regular prices and deposits; inspect complete before using total",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estimate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingList"
+              },
+              "example": {
+                "items": [
+                  {
+                    "product_id": "315853194",
+                    "quantity": 2
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watchlist": {
+      "get": {
+        "operationId": "watchlist",
+        "summary": "List watched products",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watchlist"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watchlist/{id}": {
+      "put": {
+        "operationId": "watch",
+        "summary": "Watch a product; does not record a snapshot",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$",
+              "example": "315853194"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "unwatch",
+        "summary": "Remove from watchlist, preserving history",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$",
+              "example": "315853194"
+            }
+          }
+        ]
+      }
+    },
+    "/snapshots/{id}": {
+      "post": {
+        "operationId": "snapshot",
+        "summary": "Record a fresh observation, bypassing the cache",
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream failure; no observation recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$",
+              "example": "315853194"
+            }
+          }
+        ]
+      }
+    },
+    "/history/{id}": {
+      "get": {
+        "operationId": "history",
+        "summary": "Read newest observations first",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error; see the API reference for status codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$",
+              "example": "315853194"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9]{9}$",
+            "example": "315853194"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "image_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "const": "EUR"
+          },
+          "price_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "unit_price_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "unit_measure": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deposit_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "product_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "promotions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "startDate": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "endDate": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "description",
+                "startDate",
+                "endDate"
+              ]
+            }
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cached": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "url",
+          "currency",
+          "price_cents",
+          "unit_price_cents",
+          "unit_measure",
+          "deposit_cents",
+          "available",
+          "product_type",
+          "promotions",
+          "observed_at"
+        ]
+      },
+      "Search": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cached": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query",
+          "page",
+          "limit",
+          "total",
+          "products",
+          "observed_at",
+          "cached"
+        ]
+      },
+      "ShoppingList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$",
+                  "example": "315853194"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 99
+                }
+              },
+              "required": [
+                "product_id",
+                "quantity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "EstimateLine": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[0-9]{9}$",
+            "example": "315853194"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "status": {
+            "enum": [
+              "priced",
+              "product_not_found",
+              "unavailable",
+              "unsupported_product_type",
+              "unknown_price",
+              "unknown_deposit"
+            ]
+          },
+          "subtotal_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deposit_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "line_total_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity",
+          "status",
+          "line_total_cents"
+        ]
+      },
+      "Estimate": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "const": "EUR"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EstimateLine"
+            }
+          },
+          "subtotal_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deposit_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "priced_total_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "pricing_basis": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "complete",
+          "items",
+          "subtotal_cents",
+          "deposit_cents",
+          "priced_total_cents",
+          "total_cents",
+          "pricing_basis"
+        ]
+      },
+      "Watchlist": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$",
+                  "example": "315853194"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "added_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "product_id",
+                "title",
+                "added_at"
+              ]
+            }
+          }
+        },
+        "required": [
+          "products"
+        ]
+      },
+      "WatchResult": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[0-9]{9}$",
+            "example": "315853194"
+          },
+          "watched": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "product_id",
+          "watched"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[0-9]{9}$",
+            "example": "315853194"
+          },
+          "snapshots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": [
+          "product_id",
+          "snapshots"
+        ]
+      },
+      "Snapshot": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$",
+                  "example": "315853194"
+                },
+                "status": {
+                  "enum": [
+                    "recorded",
+                    "failed"
+                  ]
+                },
+                "observed_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "product_id",
+                "status"
+              ]
+            }
+          },
+          "recorded": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "skipped": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "results",
+          "recorded",
+          "failed",
+          "skipped"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "const": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "const": "IE"
+          },
+          "currency": {
+            "const": "EUR"
+          },
+          "version": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "region",
+          "currency",
+          "version",
+          "endpoints"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

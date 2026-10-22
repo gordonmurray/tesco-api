@@ -1,0 +1,12 @@
+.git
+.github
+vendor
+var
+.env
+.env.*
+.phpunit.cache
+README.md
+docs
+backups
+coverage
+*.log

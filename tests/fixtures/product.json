@@ -1,0 +1,12 @@
+{
+  "id": "315853194",
+  "title": "Example cola 2L",
+  "defaultImageUrl": "https://example.com/cola.jpg",
+  "productType": "SingleProduct",
+  "charges": [{"__typename": "ProductDepositReturnCharge", "amount": 0.25}],
+  "sellers": {"results": [{
+    "isForSale": true,
+    "price": {"actual": 3.40, "unitPrice": 1.70, "unitOfMeasure": "litre"},
+    "promotions": [{"description": "Any 3 for €6.50 Clubcard Price", "startDate": "2026-10-12T23:00:00Z", "endDate": "2026-11-11T00:00:00Z"}]
+  }]}
+}
