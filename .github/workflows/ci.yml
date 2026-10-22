@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build tests on the runtime PHP version
+        run: docker build --pull --target test -t tesco-api-test .
+      - name: PHP syntax
+        run: docker run --rm --network none tesco-api-test sh -c 'find src tests public bin -type f \( -name "*.php" -o -name tesco \) -print0 | xargs -0 -n1 php -l'
+      - name: PHPUnit without network access
+        run: docker run --rm --network none tesco-api-test vendor/bin/phpunit
+      - name: Composer validation and security advisories
+        run: |
+          docker run --rm tesco-api-test composer validate --strict
+          docker run --rm tesco-api-test composer audit
+      - name: Runtime smoke test
+        run: |
+          docker compose up --build -d --wait api
+          curl --fail http://localhost:8080/health
+          curl --fail http://localhost:8080/openapi.json
+          tests/runtime-smoke.sh tesco-api-api
+      - if: always()
+        run: docker compose down

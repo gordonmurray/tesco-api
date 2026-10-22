@@ -1,5 +1,10 @@
-/phpunit.xml
-/vendor
-/build
-/composer.lock
-
+/vendor/
+/var/*
+!/var/.gitkeep
+/.env
+/.env.*
+!/.env.example
+/.phpunit.cache/
+/coverage/
+/backups/
+/*.log

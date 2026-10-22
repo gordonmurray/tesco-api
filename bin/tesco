@@ -1,0 +1,43 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+try {
+    $command = $argv[1] ?? 'help';
+    if ($command === 'help') {
+        echo "Tesco Ireland — product search, list estimates and price history\n\n";
+        echo "  search QUERY         Search products (quote multiword queries)\n  product ID           Fetch a product by its nine-digit ID\n  estimate FILE        Estimate a JSON shopping list\n  watch ID             Add a product to the watchlist\n  unwatch ID           Remove a product, keeping its history\n  watchlist            List watched products\n  snapshot [ID]        Record fresh prices for one product or the watchlist\n  history ID           Show the latest 100 observations\n\nAll money is in euro cents. Snapshot exits nonzero on partial failure.\n";
+        exit(0);
+    }
+    [$catalog, $store, $tracker] = Tesco\Bootstrap::services();
+    $arg = $argv[2] ?? '';
+    if (in_array($command, ['product', 'watch', 'unwatch', 'history'], true) || ($command === 'snapshot' && $arg !== '')) {
+        Tesco\TescoClient::validateId($arg);
+    }
+    $result = match ($command) {
+        'search' => $catalog->search($arg),
+        'product' => $catalog->product($arg),
+        'watch' => (function () use ($catalog, $store, $arg): array { $store->watch($catalog->product($arg)); return ['product_id' => $arg, 'watched' => true]; })(),
+        'unwatch' => (function () use ($store, $arg): array { $store->unwatch($arg); return ['product_id' => $arg, 'watched' => false]; })(),
+        'watchlist' => ['products' => $store->watchlist()],
+        'snapshot' => $tracker->refresh($arg === '' ? null : $arg),
+        'history' => ['product_id' => $arg, 'snapshots' => $store->history($arg)],
+        'estimate' => (function () use ($catalog, $arg): array {
+            if (!is_file($arg) || !is_readable($arg) || filesize($arg) > 65536) {
+                throw new Tesco\ApiError('invalid_input', 'Provide a readable shopping-list JSON file no larger than 64 KiB.', 422);
+            }
+            $input = json_decode(file_get_contents($arg), true, 32, JSON_THROW_ON_ERROR);
+            if (!is_array($input) || !is_array($input['items'] ?? null)) {
+                throw new Tesco\ApiError('invalid_input', 'Supply an object with an items list.', 422);
+            }
+            return (new Tesco\Estimator($catalog))->estimate($input['items']);
+        })(),
+        default => throw new Tesco\ApiError('invalid_command', 'Unknown command. Run bin/tesco help.', 422),
+    };
+    echo json_encode($result, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), "\n";
+    exit(($result['failed'] ?? 0) > 0 || ($result['complete'] ?? true) === false ? 1 : 0);
+} catch (Throwable $e) {
+    fwrite(STDERR, json_encode(['error' => ['code' => $e instanceof Tesco\ApiError ? $e->errorCode : 'command_failed', 'message' => $e instanceof Tesco\ApiError ? $e->getMessage() : 'Command failed. Check the input file and database configuration.']], JSON_UNESCAPED_SLASHES) . "\n");
+    exit(1);
+}
